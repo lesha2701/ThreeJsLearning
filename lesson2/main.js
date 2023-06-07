@@ -15,6 +15,7 @@ import sunTexture from './img/sun.jpg';
 import uranusRingTexture from './img/uranus ring.png';
 import uranusTexture from './img/uranus.jpg';
 import venusTexture from './img/venus.jpg';
+import moonTexture from './img/moon.jpg'
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -26,7 +27,7 @@ const camera = new THREE.PerspectiveCamera(
   45,
   window.innerWidth / window.innerHeight,
   0.1,
-  1000
+  2000
 );
 
 const orbit = new OrbitControls(camera, renderer.domElement);
@@ -49,32 +50,68 @@ scene.background = cubeTexture.load([
 const textureLoader = new THREE.TextureLoader();
 
 // crate Solar System
-const sunGeo = new THREE.SphereGeometry(32, 30, 30)
+const sunGeo = new THREE.SphereGeometry(16, 30, 30)
 const sunMat = new THREE.MeshBasicMaterial({
   map: textureLoader.load(sunTexture)
 });
 const sun = new THREE.Mesh(sunGeo, sunMat);
 scene.add(sun);
 
-const mercuryGeo = new THREE.SphereGeometry(3.2, 30, 30)
-const mercuryMat = new THREE.MeshStandardMaterial({
-  map: textureLoader.load(mercuryTexture)
-});
-const mercury = new THREE.Mesh(mercuryGeo, mercuryMat);
-const mercuruObj = new THREE.Object3D();
-mercuruObj.add(mercury)
-scene.add(mercuruObj)
-mercury.position.x = 60
+function createPlanet(size, texture, position, ring, satellite) {
+  const geo = new THREE.SphereGeometry(size, 30, 30)
+  const mat = new THREE.MeshStandardMaterial({
+    map: textureLoader.load(texture)
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  const Obj = new THREE.Object3D();
+  Obj.add(mesh)
+  if (ring) {
+    const ringGeo = new THREE.RingGeometry(ring.innerRadius, ring.outerRadius, 32)
+    const ringMat = new THREE.MeshStandardMaterial({
+      map: textureLoader.load(ring.texture),
+      sode: THREE.DoubleSide
+    });
+    const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+    Obj.add(ringMesh)
+    ringMesh.position.x = position
+    ringMesh.rotation.x = -0.5 * Math.PI;
+  }
+  if (satellite) {
+    const satelGeo = new THREE.SphereGeometry(satellite.size, 30, 30)
+    const satelMat = new THREE.MeshStandardMaterial({
+      map: textureLoader.load(satellite.texture)
+    })
+    const satel = new THREE.Mesh(satelGeo, satelMat)
+    satellite.mesh = satel
+    mesh.add(satel)
+    satel.position.x = 15
+  }
+  scene.add(Obj)
+  mesh.position.x = position  
+  return {mesh, Obj, satellite}
+}
 
-const saturnGeo = new THREE.SphereGeometry(8, 30, 30)
-const saturnMat = new THREE.MeshStandardMaterial({
-  map: textureLoader.load(saturnTexture)
-});
-const saturn = new THREE.Mesh(saturnGeo, saturnMat);
-const saturnObj = new THREE.Object3D();
-saturnObj.add(saturn)
-scene.add(saturnObj)
-saturn.position.x = 200
+const mercury = createPlanet(3.2, mercuryTexture, 28)
+const venus = createPlanet(5.8, venusTexture, 44)
+const earth = createPlanet(6, earthTexture, 62, undefined, {
+  size: 2,
+  texture: moonTexture,
+  rotationSpeed: 0.04 
+})
+const mars = createPlanet(4, marsTexture, 78)
+const jupiter = createPlanet(12, jupiterTexture, 100)
+const saturn = createPlanet(10, saturnTexture, 132, {
+  innerRadius: 10,
+  outerRadius: 20,
+  texture: saturnRingTexture
+})
+const uranus = createPlanet(7, uranusTexture, 176, {
+  innerRadius: 7,
+  outerRadius: 12,
+  texture: uranusRingTexture
+})
+const neptune = createPlanet(7, neptuneTexture, 200)
+const pluto = createPlanet(2.8, plutoTexture, 216)
 
 const pointLight = new THREE.PointLight(0x333333, 10, 300)
 scene.add(pointLight)
@@ -83,9 +120,27 @@ scene.add(pointLight)
 
 function animate() {
   sun.rotateY(0.0005)
-  mercuruObj.rotateY(0.03)
-  saturnObj.rotateY(0.003)
-  mercury.rotateY(0.03)
+  mercury.Obj.rotateY(0.04)
+  venus.Obj.rotateY(0.015)
+  earth.Obj.rotateY(0.01)
+  earth.satellite.mesh.rotation.y += 0.2
+  mars.Obj.rotateY(0.008)
+  jupiter.Obj.rotateY(0.003)
+  saturn.Obj.rotateY(0.0015)
+  uranus.Obj.rotateY(0.0004)
+  neptune.Obj.rotateY(0.0001)
+  pluto.Obj.rotateY(0.00007)
+
+  mercury.mesh.rotateY(0.004)
+  venus.mesh.rotateY(0.002)
+  earth.mesh.rotateY(0.02)
+  mars.mesh.rotateY(0.018)
+  jupiter.mesh.rotateY(0.04)
+  saturn.mesh.rotateY(0.003)
+  uranus.mesh.rotateY(0.03)
+  neptune.mesh.rotateY(0.032)
+  pluto.mesh.rotateY(0.008)
+
   renderer.render(scene, camera);
 }
 
