@@ -30,6 +30,15 @@ const camera = new THREE.PerspectiveCamera(
   2000
 );
 
+import {OBJLoader} from 'three/addons/loaders/OBJLoader.js';
+
+{
+  const objLoader = new OBJLoader();
+  objLoader.load('/bicycle.obj', (root) => {
+    scene.add(root);
+  });
+}
+
 const orbit = new OrbitControls(camera, renderer.domElement);
 camera.position.set(-90, 140, 140);
 orbit.update();
